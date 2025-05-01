@@ -1,8 +1,7 @@
 # Quoestion
 # Which item was purchased just before the customer became a member?
 # P.S. We now deal with 3 tables
-#
-#
+
 # 𝐒𝐡𝐨𝐫𝐭 𝐞𝐱𝐩𝐥𝐚𝐧𝐚𝐭𝐢𝐨𝐧:
 # Find the last 𝐢𝐭𝐞𝐦 𝐚 𝐜𝐮𝐬𝐭𝐨𝐦𝐞𝐫 𝐛𝐨𝐮𝐠𝐡𝐭 𝐫𝐢𝐠𝐡𝐭 𝐛𝐞𝐟𝐨𝐫𝐞 they officially became a member —
 # the final purchase that happened before their join date.
@@ -43,8 +42,28 @@ members_data = [('A', '2021-01-07'),('B', '2021-01-09')]
 sales_df = spark.createDataFrame(data=sales_data,schema= sales_schema)
 menu_df = spark.createDataFrame(data=menu_data,schema= menu_schema)
 members_df = spark.createDataFrame(data=members_data,schema= members_schema)
+# sales_df.show()
+# menu_df.show()
+# members_df.show()
+df_joined = sales_df.alias('a').join(
+    members_df.alias('b'),
+    (col('a.customer_id') == col('b.customer_id')) &
+    (col('a.order_date') < col('b.join_date')),
+    "inner"
+).drop(col("b.customer_id"))  # Drop redundant column
+# df_joined.show()
 
-sales_df.show()
-menu_df.show()
-members_df.show()
+window_spec = Window.partitionBy("customer_id").orderBy(desc("order_date"))
+windowed_df = df_joined.withColumn('ranking', dense_rank().over(window_spec)).filter(col('ranking') == 1)
+# windowed_df.show()
 
+output_df = windowed_df.alias('c').join(
+    menu_df.alias('d'),
+    col('c.product_id') == col('d.product_id'),
+    'inner'
+).select(
+    col('c.customer_id'),
+    col('d.product_name').alias('dish before becoming customer')
+)
+
+output_df.show()
