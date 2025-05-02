@@ -67,3 +67,11 @@ output_df = windowed_df.alias('c').join(
 )
 
 output_df.show()
+
+# 𝐐𝐮𝐞𝐬𝐭𝐢𝐨𝐧 𝐨𝐟 𝐭𝐡𝐞 𝐃𝐚𝐲!
+# 𝐖𝐡𝐚𝐭 𝐢𝐬 𝐭𝐡𝐞 𝐭𝐨𝐭𝐚𝐥 𝐚𝐦𝐨𝐮𝐧𝐭 𝐞𝐚𝐜𝐡 𝐜𝐮𝐬𝐭𝐨𝐦𝐞𝐫 𝐬𝐩𝐞𝐧𝐭 𝐚𝐭 𝐭𝐡𝐞 𝐫𝐞𝐬𝐭𝐚𝐮𝐫𝐚𝐧𝐭?
+
+output_df = sales_df.join(menu_df,'product_id','inner').\
+            groupby('customer_id').agg(sum('price').alias("total_mount_spent")).orderBy('total_mount_spent')
+
+output_df.show()
