@@ -46,6 +46,10 @@ df_transactions.show()
 window_spec = Window.partitionBy('customer_id').orderBy(col('txn_date'))
 window_df = df_transactions.withColumn('next_transaction',lead('amount').over(window_spec)).\
                                         filter(col('amount') < col('next_transaction'))
+
+window
+
+
 result_df = window_df.select("customer_id").distinct()
 
 window_df.show()
